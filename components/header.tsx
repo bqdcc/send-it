@@ -1,0 +1,24 @@
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { getServerSession } from "next-auth/next";
+import Login from "./login";
+import ModeToggle from "./mode-toggle";
+import Nav from "./nav";
+
+export default async function Header() {
+  const session = await getServerSession(authOptions);
+  console.log(session)
+  return (
+    <div className="flex items-center justify-between p-2">
+      <Nav />
+      <div className="flex items-center gap-2">
+        {
+            !session && <Login />
+        }
+        {
+            !!session && <span>logined</span>
+        }
+        <ModeToggle />
+      </div>
+    </div>
+  );
+}
