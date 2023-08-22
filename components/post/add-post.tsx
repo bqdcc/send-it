@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 const formSchema = z.object({
@@ -21,7 +21,7 @@ export default function AddPost() {
             title: '',
         },
     });
-
+    const queryClient = useQueryClient();
     let toastPostId: string;
 
     const { mutate, isLoading } = useMutation({
@@ -33,6 +33,7 @@ export default function AddPost() {
             });
         },
         onSuccess: (data) => {
+            queryClient.invalidateQueries(['all-post']);
             toast.success('Add post success 🔥!', { id: toastPostId });
             form.reset();
         },

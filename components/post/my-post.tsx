@@ -1,21 +1,22 @@
 'use client';
 
-import { PostType } from '@/app/types/post';
+import queryString from 'query-string';
 import { useQuery } from '@tanstack/react-query';
-import Post from './post';
+import { PostType } from '@/app/types/post';
+import EditPost from './edit-post';
 
 async function getPosts() {
-    const response = await fetch('/api/posts', {
+    const response = await fetch('/api/posts?' + queryString.stringify({ isAuth: true }), {
         method: 'GET',
     });
     const { data }: { data: PostType[] } = await response.json();
     return data;
 }
 
-export default function AllPost() {
+export default function MyPost() {
     const { data, error, isLoading } = useQuery<PostType[]>({
         queryFn: getPosts,
-        queryKey: ['all-post'],
+        queryKey: ['auth-posts'],
     });
     if (error) {
         return <div>{JSON.stringify(error)}</div>;
@@ -27,7 +28,7 @@ export default function AllPost() {
     return (
         <div>
             {data?.map((post) => (
-                <Post
+                <EditPost
                     key={post.id}
                     image={post.user.image}
                     name={post.user.name}
