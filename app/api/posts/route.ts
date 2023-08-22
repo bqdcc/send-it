@@ -3,9 +3,48 @@ import { NextResponse } from 'next/server';
 import { authOptions } from '../auth/[...nextauth]/route';
 import prisma from '@/prisma/client';
 
-type Data = {
-    name: string;
-};
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const isAuth = searchParams.get('isAuth');
+
+    if (!isAuth) {
+        try {
+            const result = await prisma.post.findMany({
+                include: { user: true, comments: true },
+                orderBy: { createdAt: 'desc' },
+            });
+            return NextResponse.json({ data: result });
+        } catch (error) {
+            return NextResponse.json(
+                { error: 'Error has occurred whilst get posts!' },
+                { status: 403 }
+            );
+        }
+    }
+
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ message: 'Please sign in to make post!' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user?.email || undefined },
+    });
+
+    try {
+        const result = await prisma.post.findMany({
+            include: { user: true, comments: true },
+            where: { userId: user?.id },
+            orderBy: { createdAt: 'desc' },
+        });
+        return NextResponse.json({ data: result });
+    } catch (error) {
+        return NextResponse.json(
+            { error: 'Error has occurred whilst get posts!' },
+            { status: 403 }
+        );
+    }
+}
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);

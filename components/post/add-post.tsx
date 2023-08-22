@@ -4,8 +4,8 @@ import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -22,20 +22,22 @@ export default function AddPost() {
         },
     });
 
+    let toastPostId: string;
+
     const { mutate, isLoading } = useMutation({
         mutationFn: async (values: z.infer<typeof formSchema>) => {
-            toast.loading('Posting...', { id: 'addPost' });
+            toastPostId = toast.loading('Creating your post...');
             await fetch('/api/posts', {
                 method: 'POST',
                 body: JSON.stringify({ title: values.title }),
             });
         },
         onSuccess: (data) => {
-            toast.success('Add post success!', { id: 'addPost' });
+            toast.success('Add post success 🔥!', { id: toastPostId });
             form.reset();
         },
         onError: (error) => {
-            toast.error('Add post worrng', { id: 'addPost' });
+            toast.error('Add post worrng', { id: toastPostId });
             console.error(error);
         },
     });
