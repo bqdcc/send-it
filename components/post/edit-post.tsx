@@ -26,7 +26,7 @@ export default function EditPost({ image, name, title, id, comments }: Props) {
                 <Link href={`/post/${id}`} className="text-sm">
                     {comments.length} Comment
                 </Link>
-                <DeleteDialog />
+                <DeleteDialog id={id} />
             </div>
         </div>
     );

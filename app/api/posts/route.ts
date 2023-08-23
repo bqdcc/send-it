@@ -88,4 +88,24 @@ export async function DELETE(req: Request) {
     if (!session) {
         return NextResponse.json({ message: 'Please sign in to make post!' }, { status: 401 });
     }
+
+    const body = await req.json();
+
+    if (!body && !body.id) {
+        return NextResponse.json({ message: 'Parameter is wrong!!!' }, { status: 401 });
+    }
+
+    try {
+        const result = await prisma.post.delete({
+            where: {
+                id: body.id,
+            },
+        });
+        return NextResponse.json({ data: !!result });
+    } catch (error) {
+        return NextResponse.json(
+            { error: 'Error has occurred whilst delete a post!' },
+            { status: 403 }
+        );
+    }
 }
