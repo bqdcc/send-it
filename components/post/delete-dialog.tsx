@@ -19,7 +19,7 @@ export default function DeleteDialog({ id }: { id: string }) {
     const { mutate, isLoading } = useMutation({
         mutationFn: async () => {
             toast.loading('Delete your post...', { id: 'delete-post' });
-            await fetch('/api/posts', {
+            await fetch('/api/post', {
                 method: 'DELETE',
                 body: JSON.stringify({ id }),
             });

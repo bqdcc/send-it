@@ -11,34 +11,33 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 const formSchema = z.object({
-    title: z.string().min(2).max(255),
+    content: z.string().min(2).max(255),
 });
 
-export default function AddPost() {
+export default function AddComment({ id }: { id: string }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            title: '',
+            content: '',
         },
     });
     const queryClient = useQueryClient();
-    let toastPostId: string;
 
     const { mutate, isLoading } = useMutation({
-        mutationFn: async (values: z.infer<typeof formSchema>) => {
-            toastPostId = toast.loading('Creating your post...');
-            await fetch('/api/post', {
+        mutationFn: async ({ content, postId }: { content: string; postId: string }) => {
+            toast.loading('Creating your comment...', { id: 'add-comments' });
+            await fetch('/api/comment', {
                 method: 'POST',
-                body: JSON.stringify({ title: values.title }),
+                body: JSON.stringify({ content, postId }),
             });
         },
         onSuccess: (data) => {
-            queryClient.invalidateQueries(['all-post']);
-            toast.success('Add post success 🔥!', { id: toastPostId });
+            queryClient.invalidateQueries(['post-detail']);
+            toast.success('Add comment success 🔥!', { id: 'add-comments' });
             form.reset();
         },
         onError: (error) => {
-            toast.error('Add post worrng', { id: toastPostId });
+            toast.error('Add comment worrng', { id: 'add-comments' });
             console.error(error);
         },
     });
@@ -47,13 +46,13 @@ export default function AddPost() {
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit((values) => {
-                    mutate(values);
+                    mutate({ content: values.content, postId: id });
                 })}
                 className="space-y-8 rounded-md bg-foreground/90 p-8"
             >
                 <FormField
                     control={form.control}
-                    name="title"
+                    name="content"
                     render={({ field }) => (
                         <FormItem>
                             <FormControl>
@@ -68,18 +67,20 @@ export default function AddPost() {
                         </FormItem>
                     )}
                 />
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button isLoading={isLoading} className="bg-green-400" type="submit">
+                        Add Comment 🚀
+                    </Button>
                     <span
                         className={cn([
                             'text-sm text-background',
-                            form.watch('title').length > 255 ? 'font-bold text-red-800' : undefined,
+                            form.watch('content').length > 255
+                                ? 'font-bold text-red-800'
+                                : undefined,
                         ])}
                     >
-                        {form.watch('title').length}/255
+                        {form.watch('content').length}/255
                     </span>
-                    <Button isLoading={isLoading} className="bg-green-400" type="submit">
-                        Create Post
-                    </Button>
                 </div>
             </form>
         </Form>

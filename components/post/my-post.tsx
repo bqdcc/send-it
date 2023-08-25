@@ -6,7 +6,7 @@ import { PostType } from '@/app/types/post';
 import EditPost from './edit-post';
 
 async function getPosts() {
-    const response = await fetch('/api/posts?' + queryString.stringify({ isAuth: true }), {
+    const response = await fetch('/api/post?' + queryString.stringify({ isAuth: true }), {
         method: 'GET',
     });
     const { data }: { data: PostType[] } = await response.json();

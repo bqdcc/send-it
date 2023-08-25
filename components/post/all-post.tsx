@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import Post from './post';
 
 async function getPosts() {
-    const response = await fetch('/api/posts', {
+    const response = await fetch('/api/post', {
         method: 'GET',
     });
     const { data }: { data: PostType[] } = await response.json();

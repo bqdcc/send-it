@@ -1,9 +1,8 @@
 export type CommentType = {
     id: string;
     content: string;
-    createdAt?: string;
+    createdAt: string;
     postId: string;
-    title: string;
     userId: string;
     user: {
         email: string;
