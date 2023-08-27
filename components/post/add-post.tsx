@@ -9,6 +9,7 @@ import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { PostType } from '@/app/types/post';
 
 const formSchema = z.object({
     title: z.string().min(2).max(255),
@@ -27,18 +28,23 @@ export default function AddPost() {
     const { mutate, isLoading } = useMutation({
         mutationFn: async (values: z.infer<typeof formSchema>) => {
             toastPostId = toast.loading('Creating your post...');
-            await fetch('/api/post', {
+            return await fetch('/api/post', {
                 method: 'POST',
                 body: JSON.stringify({ title: values.title }),
             });
         },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries(['all-post']);
-            toast.success('Add post success 🔥!', { id: toastPostId });
-            form.reset();
+        onSuccess: async (response) => {
+            const { data, message }: { data?: PostType; message?: string } = await response.json();
+            if (!!data) {
+                queryClient.invalidateQueries(['all-post']);
+                toast.success('Add post success 🔥!', { id: toastPostId });
+                form.reset();
+            } else {
+                throw new Error(message);
+            }
         },
-        onError: (error) => {
-            toast.error('Add post worrng', { id: toastPostId });
+        onError: (error: Error) => {
+            toast.error(error.message || 'Add post worrng', { id: toastPostId });
             console.error(error);
         },
     });

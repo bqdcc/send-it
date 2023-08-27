@@ -9,6 +9,7 @@ import { Textarea } from '../ui/textarea';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { CommentType } from '@/app/types/post';
 
 const formSchema = z.object({
     content: z.string().min(2).max(255),
@@ -26,18 +27,24 @@ export default function AddComment({ id }: { id: string }) {
     const { mutate, isLoading } = useMutation({
         mutationFn: async ({ content, postId }: { content: string; postId: string }) => {
             toast.loading('Creating your comment...', { id: 'add-comments' });
-            await fetch('/api/comment', {
+            return await fetch('/api/comment', {
                 method: 'POST',
                 body: JSON.stringify({ content, postId }),
             });
         },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries(['post-detail']);
-            toast.success('Add comment success 🔥!', { id: 'add-comments' });
-            form.reset();
+        onSuccess: async (response) => {
+            const { data, message }: { data?: CommentType; message?: string } =
+                await response.json();
+            if (!!data) {
+                queryClient.invalidateQueries(['post-detail']);
+                toast.success('Add comment success 🔥!', { id: 'add-comments' });
+                form.reset();
+            } else {
+                throw new Error(message);
+            }
         },
-        onError: (error) => {
-            toast.error('Add comment worrng', { id: 'add-comments' });
+        onError: (error: Error) => {
+            toast.error(error.message || 'Add comment worrng', { id: 'add-comments' });
             console.error(error);
         },
     });

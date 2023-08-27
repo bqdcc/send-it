@@ -19,17 +19,22 @@ export default function DeleteDialog({ id }: { id: string }) {
     const { mutate, isLoading } = useMutation({
         mutationFn: async () => {
             toast.loading('Delete your post...', { id: 'delete-post' });
-            await fetch('/api/post', {
+            return await fetch('/api/post', {
                 method: 'DELETE',
                 body: JSON.stringify({ id }),
             });
         },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries(['auth-posts']);
-            toast.success('Delete post success ␡!', { id: 'delete-post' });
+        onSuccess: async (response) => {
+            const { data, message }: { data?: boolean; message?: string } = await response.json();
+            if (data) {
+                queryClient.invalidateQueries(['auth-posts']);
+                toast.success('Delete post success ␡!', { id: 'delete-post' });
+            } else {
+                throw new Error(message);
+            }
         },
-        onError: (error) => {
-            toast.error('Delete post worrng', { id: 'delete-post' });
+        onError: (error: Error) => {
+            toast.error(error.message || 'Delete post worrng', { id: 'delete-post' });
             console.error(error);
         },
     });
